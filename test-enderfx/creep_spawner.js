@@ -1,3 +1,4 @@
+var creep = require('creep');
 var creepSpawner = {
 
 	creepPatterns: {
@@ -48,21 +49,24 @@ var creepSpawner = {
 	},
 
 	// Possible calls:
-	// buildUnit('soldierII', 2);
+	// buildUnit('soldierII', 'attacker', 2);
 	// buildUnit({
 	// 	pattern: 'soldierII',
 	// 	level: 2,
 	// 	modifiers: {
 	// 		TOUGH: 5
-	// 	}
+	// 	},
+	//  role: 'attacker'
 	// });
-	buildUnit: function(spawn, config, level){
+	buildUnit: function(spawn, config, role, level){
 		var me = this,
 			unitName,
-			unitParts = [];
+			unitParts = [],
+			unitRole;
 
 		if(typeof(config) == 'string'){
 			unitParts = me.repeatPattern(me.creepPatterns[config] || [], level || 1);
+			unitRole = role;
 		}else{
 			unitParts = config.pattern ? me.repeatPattern(me.creepPatterns[config.pattern] || [], config.level || 1) : [];
 			// Check modifiers
@@ -71,9 +75,14 @@ var creepSpawner = {
 					unitParts = unitParts.concat(me.modifierFn[modifierName](config.modifiers[modifierName]));
 				}
 			}
+
+			unitRole = config.role;
 		}
 
-		unitName = spawn.createCreep(unitParts);
+		unitName = spawn.createCreep(unitParts, undefined, {
+			role: unitRole,
+			mode: config.mode
+		});
 
 		return unitName;
 	},
